@@ -1,108 +1,51 @@
 	# 先導入後面會用到的套件
-import requests
-from bs4 import BeautifulSoup
-import time
-import os
-
-
+import requests # 請求工具
+from bs4 import BeautifulSoup # 解析工具
+import time # 用來暫停程式
+ 
 # 要爬的股票
-stock = ["1101", "2330", "1102"]
+stock = ["1101","2330"]
+	for i in range(len(stock)): # 迴圈依序爬股價
 
+	    # 現在處理的股票
 
-# 從 GitHub Secrets 取得 Telegram Bot Token
-token = os.environ.get("TELEGRAM_BOT_TOKEN")
+	    stockid = stock[i]
 
-# 從 GitHub Secrets 取得 Telegram Chat ID
-chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+	    # 網址塞入股票編號
 
+	    url = "https://tw.stock.yahoo.com/quote/"+stockid+".TW"
 
-if not token:
-    raise RuntimeError("找不到 TELEGRAM_BOT_TOKEN")
+	    # 發送請求
 
-if not chat_id:
-    raise RuntimeError("找不到 TELEGRAM_CHAT_ID")
+	    r = requests.get(url)
 
+	    # 解析回應的 HTML
 
-# Yahoo Finance Headers
-headers = {
-    "User-Agent": (
-        "Mozilla/5.0 "
-        "(Windows NT 10.0; Win64; x64) "
-        "AppleWebKit/537.36 "
-        "(KHTML, like Gecko) "
-        "Chrome/131.0 Safari/537.36"
-    )
-}
+	    soup = BeautifulSoup(r.text, 'html.parser')
 
+	    # 定位股價
 
-for stockid in stock:
+	    price = soup.find('span',class_=["Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-down)","Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c)","Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-up)"]).getText()
+     	    # 回報的訊息 (可自訂)
 
-    print(f"正在取得 {stockid} 股價...")
+	    message = "股票 "+stockid+" 即時股價為 "+price
 
-    # Yahoo Finance 網址
-    url = f"https://tw.stock.yahoo.com/quote/{stockid}.TW"
+	    # 用 telegram bot 回報股價
 
-    try:
-        # 發送請求
-        r = requests.get(
-            url,
-            headers=headers,
-            timeout=10
-        )
+	    # bot token
 
-        r.raise_for_status()
+	    token = "輸入你的 bot token"
 
-        # 解析 HTML
-        soup = BeautifulSoup(
-            r.text,
-            "html.parser"
-        )
+	    # 使用者 id
 
-        # 找股價
-        price_element = soup.find(
-            "span",
-            class_=[
-                "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-down)",
-                "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c)",
-                "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-up)"
-            ]
-        )
+	    chat_id="輸入你的 telegram id"
 
-        if price_element is None:
-            print(f"{stockid}：找不到股價")
-            continue
+	    # bot 送訊息
 
-        price = price_element.get_text(strip=True)
+	    url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={message}"
 
-        print(f"{stockid}：{price}")
+	    requests.get(url)
 
-        # Telegram 訊息
-        message = f"股票 {stockid} 即時股價為 {price}"
+	    # 每次都停 3 秒
 
-        # Telegram API
-        telegram_url = (
-            f"https://api.telegram.org/"
-            f"bot{token}/sendMessage"
-        )
-
-        response = requests.get(
-            telegram_url,
-            params={
-                "chat_id": chat_id,
-                "text": message
-            },
-            timeout=10
-        )
-
-        response.raise_for_status()
-
-        print(f"{stockid}：Telegram 通知成功")
-
-    except Exception as e:
-
-        print(
-            f"{stockid}：發生錯誤：{e}"
-        )
-
-    # 每支股票等待 3 秒
-    time.sleep(3)
+	    time.sleep(3)
