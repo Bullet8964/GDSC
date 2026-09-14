@@ -1,3 +1,82 @@
+Skip to content
+Bullet8964
+GDSC
+Repository navigation
+Code
+Issues
+Pull requests
+Agents
+Actions
+Projects
+Wiki
+Security and quality
+1
+ (1)
+Insights
+Settings
+Files
+Go to file
+t
+T
+.github/workflows
+python-app.yml
+README.md
+test1.py
+GDSC
+/
+test1.py
+in
+main
+
+Edit
+
+Preview
+Indent mode
+
+Tabs
+Indent size
+
+4
+Line wrap mode
+
+No wrap
+Editing test1.py file contents
+  1
+  2
+  3
+  4
+  5
+  6
+  7
+  8
+  9
+ 10
+ 11
+ 12
+ 13
+ 14
+ 15
+ 16
+ 17
+ 18
+ 19
+ 20
+ 21
+ 22
+ 23
+ 24
+ 25
+ 26
+ 27
+ 28
+ 29
+ 30
+ 31
+ 32
+ 33
+ 34
+ 35
+ 36
 	# 先導入後面會用到的套件
 import requests # 請求工具
 from bs4 import BeautifulSoup # 解析工具
@@ -34,18 +113,5 @@ stock = ["1101","2330"]
 
 	    # bot token
 
-	    token = "8976843890:AAEjjO8JIyk1JEYcVKbO0xMFt-_CASKjL7U"
-
-	    # 使用者 id
-
-	    chat_id="8810341341"
-
-	    # bot 送訊息
-
-	    url = f"https://api.telegram.org/bot{token}/sendMessage?chat_id={chat_id}&text={message}"
-
-	    requests.get(url)
-
-	    # 每次都停 3 秒
-
-	    time.sleep(3)
+Use Control + Shift + m to toggle the tab key moving focus. Alternatively, use esc then tab to move to the next interactive element on the page.
+Editing GDSC/test1.py at main · Bullet8964/GDSC
