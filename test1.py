@@ -1,117 +1,85 @@
-Skip to content
-Bullet8964
-GDSC
-Repository navigation
-Code
-Issues
-Pull requests
-Agents
-Actions
-Projects
-Wiki
-Security and quality
-1
- (1)
-Insights
-Settings
-Files
-Go to file
-t
-T
-.github/workflows
-python-app.yml
-README.md
-test1.py
-GDSC
-/
-test1.py
-in
-main
+import requests
+from bs4 import BeautifulSoup
+import time
+import os
 
-Edit
 
-Preview
-Indent mode
+# 股票代號
+stock = ["1101", "2330", "1102"]
 
-Tabs
-Indent size
 
-4
-Line wrap mode
+# Telegram 設定
+token = os.environ["TELEGRAM_BOT_TOKEN"]
+chat_id = os.environ["TELEGRAM_CHAT_ID"]
 
-No wrap
-Editing test1.py file contents
-  1
-  2
-  3
-  4
-  5
-  6
-  7
-  8
-  9
- 10
- 11
- 12
- 13
- 14
- 15
- 16
- 17
- 18
- 19
- 20
- 21
- 22
- 23
- 24
- 25
- 26
- 27
- 28
- 29
- 30
- 31
- 32
- 33
- 34
- 35
- 36
-	# 先導入後面會用到的套件
-import requests # 請求工具
-from bs4 import BeautifulSoup # 解析工具
-import time # 用來暫停程式
- 
-# 要爬的股票
-stock = ["1101","2330"]
-	for i in range(len(stock)): # 迴圈依序爬股價
 
-	    # 現在處理的股票
+headers = {
+    "User-Agent": "Mozilla/5.0"
+}
 
-	    stockid = stock[i]
 
-	    # 網址塞入股票編號
+for stockid in stock:
 
-	    url = "https://tw.stock.yahoo.com/quote/"+stockid+".TW"
+    print(f"正在取得 {stockid} 股價...")
 
-	    # 發送請求
+    # Yahoo Finance
+    url = f"https://tw.stock.yahoo.com/quote/{stockid}.TW"
 
-	    r = requests.get(url)
+    try:
 
-	    # 解析回應的 HTML
+        # 取得網頁
+        r = requests.get(
+            url,
+            headers=headers,
+            timeout=10
+        )
 
-	    soup = BeautifulSoup(r.text, 'html.parser')
+        # 解析 HTML
+        soup = BeautifulSoup(
+            r.text,
+            "html.parser"
+        )
 
-	    # 定位股價
+        # 找股價
+        price_element = soup.find(
+            "span",
+            class_=[
+                "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-down)",
+                "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c)",
+                "Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-up)"
+            ]
+        )
 
-	    price = soup.find('span',class_=["Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-down)","Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c)","Fz(32px) Fw(b) Lh(1) Mend(16px) D(f) Ai(c) C($c-trend-up)"]).getText()
-     	    # 回報的訊息 (可自訂)
+        if price_element is None:
+            print(f"{stockid} 找不到股價")
+            continue
 
-	    message = "股票 "+stockid+" 即時股價為 "+price
+        price = price_element.get_text(strip=True)
 
-	    # 用 telegram bot 回報股價
+        # Telegram 訊息
+        message = f"股票 {stockid} 即時股價為 {price}"
 
-	    # bot token
+        # Telegram API
+        telegram_url = (
+            f"https://api.telegram.org/bot{token}/sendMessage"
+        )
 
-Use Control + Shift + m to toggle the tab key moving focus. Alternatively, use esc then tab to move to the next interactive element on the page.
-Editing GDSC/test1.py at main · Bullet8964/GDSC
+        response = requests.get(
+            telegram_url,
+            params={
+                "chat_id": chat_id,
+                "text": message
+            },
+            timeout=10
+        )
+
+        response.raise_for_status()
+
+        print(f"{stockid} Telegram 傳送成功")
+
+    except Exception as e:
+
+        print(f"{stockid} 發生錯誤：{e}")
+
+    # 下一支股票等待 3 秒
+    time.sleep(3)
